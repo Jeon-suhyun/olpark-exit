@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>올팍 엑시트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: 상단 요약 → 탭(관람객/운영자/데이터 근거) → 카드 그리드, 출구 3개를 같은 열로 비교 */
+  --ink:#14213a; --muted:#5b6780; --paper:#f4f6fa; --card:#ffffff; --line:#dde3ee;
+  --accent:#1c4fd8; --accent-soft:#e3eafc;
+  --ok:#1f9d63; --warn:#d98a0b; --bad:#d23b3b;
+  --g1:#1c4fd8; --g2:#0f9aa8; --g3:#c2410c;
+  --display:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#e6ebf5; --muted:#9aa6bd; --paper:#0e1422; --card:#161e30; --line:#26314a;
+  --accent:#7fa2ff; --accent-soft:#1d2a4a; --ok:#3ccf8e; --warn:#f2b441; --bad:#ff6b6b;
+  --g1:#7fa2ff; --g2:#3fd0dc; --g3:#ff9a5c; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --ink:#e6ebf5; --muted:#9aa6bd; --paper:#0e1422; --card:#161e30; --line:#26314a;
+  --accent:#7fa2ff; --accent-soft:#1d2a4a; --ok:#3ccf8e; --warn:#f2b441; --bad:#ff6b6b;
+  --g1:#7fa2ff; --g2:#3fd0dc; --g3:#ff9a5c; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.6 var(--body);}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 16px 48px;display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font:800 28px/1.15 var(--display);margin:0;letter-spacing:-.5px}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);margin:4px 0 0;font-size:14px}
+h2{font:700 18px/1.3 var(--display);margin:0;text-wrap:balance}
+h3{font:600 14px/1.4 var(--body);margin:0;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;font:600 14px var(--body);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tab:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.grid{display:grid;gap:14px}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:760px){.g3,.g2,.g4{grid-template-columns:1fr}}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+label{font-weight:600;font-size:14px}
+select{font:500 15px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:600;font-size:13px;white-space:nowrap}
+.pill.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.big{font:800 30px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.gate{border-left:5px solid var(--gc);}
+.gate.best{box-shadow:0 0 0 2px var(--ok) inset}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:600}
+.advice{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-weight:500}
+.advice b{color:var(--accent)}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:12px var(--body)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:13px}
+tr.sel td{background:var(--accent-soft)}
+tbody tr{cursor:pointer}
+.tablewrap{overflow-x:auto}
+.station{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.station:last-child{border-bottom:0}
+.note{font-size:12.5px;color:var(--muted)}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar>span{display:block;height:100%}
+[hidden]{display:none!important}
+footer{font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.tab{transition:background .15s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>올팍 <span>엑시트</span></h1>
+    <p class="sub">올림픽공원 공연이 끝난 뒤, 어느 출구·어느 역으로 언제 나가야 덜 막히는지 알려드려요.</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="화면 선택">
+    <button class="tab" role="tab" id="tab-visitor" data-view="visitor">관람객</button>
+    <button class="tab" role="tab" id="tab-operator" data-view="operator">운영자 대시보드</button>
+    <button class="tab" role="tab" id="tab-insight" data-view="insight">데이터 근거</button>
+  </nav>
+</header>
+
+<!-- ===================== 관람객 ===================== -->
+<section id="view-visitor" class="grid">
+  <div class="card">
+    <div class="row">
+      <label for="sel-date">공연 날짜</label>
+      <select id="sel-date"></select>
+      <label for="sel-show">내 공연</label>
+      <select id="sel-show"></select>
+    </div>
+    <div class="row" id="v-summary"></div>
+    <div class="advice" id="v-advice"></div>
+  </div>
+
+  <div>
+    <h2 style="margin:4px 0 10px">주차장 출구별 퇴장 예보</h2>
+    <div class="grid g3" id="v-gates"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2>공연 종료 후 10분 단위 출차 예상</h2>
+      <div class="legend" id="v-legend"></div>
+    </div>
+    <svg class="chart" id="v-chart" viewBox="0 0 720 260" role="img" aria-label="출구별 10분 단위 출차 예상 그래프"></svg>
+    <p class="note">AI 예측 모델(그래디언트 부스팅) 결과. 출구별 소진 시간은 2025년 실측값으로 보정했어요. 2025년 공연일 113일의 입출차 기록 240만 건으로 학습했어요. 점선은 출구가 10분 동안 처리할 수 있는 최대 대수(2025년 상위 0.1% 기록)예요.</p>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>지하철로 가신다면</h2>
+      <div id="v-stations"></div>
+      <p class="note">공연일 추가 승차 인원은 2025년 서울시 역별 일별 승하차 데이터로 계산했어요. 도보 시간은 지도 기준 추정값이에요.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><h2>실시간 주변 상황</h2><span class="pill acc">예시</span></div>
+      <div id="v-live"></div>
+      <p class="note">서울시 실시간 도시데이터(올림픽공원) 2026-11-23 16:15 수집본. 서비스에서는 10분마다 자동으로 새로 받아와요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 운영자 ===================== -->
+<section id="view-operator" class="grid" hidden>
+  <div class="grid g4" id="o-kpi"></div>
+  <div class="card">
+    <h2>12월 퇴장 혼잡 예보</h2>
+    <p class="small muted" style="margin:0">날짜를 누르면 아래에 출구별 운영 계획이 나와요.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>날짜</th><th>공연</th><th>예상 관람객</th><th>주 공연 종료</th><th>종료 후 80분 출차</th><th>등급</th></tr></thead>
+      <tbody id="o-table"></tbody>
+    </table></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h2 id="o-title">출구 처리 여력</h2>
+      <div id="o-util"></div>
+      <p class="note">피크 10분 예상 출차 ÷ 출구 처리 한계. 80%를 넘으면 대기열이 생기기 시작해요.</p>
+    </div>
+    <div class="card">
+      <h2>권장 조치</h2>
+      <ol id="o-actions" style="margin:0;padding-left:20px;display:grid;gap:8px"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 데이터 근거 ===================== -->
+<section id="view-insight" class="grid" hidden>
+  <div class="grid g4" id="i-kpi"></div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>주말 시간대별 평균 주차대수</h2>
+      <div class="legend"><span><i style="background:var(--accent)"></i>공연 있는 날 (101일)</span><span><i style="background:var(--muted)"></i>공연 없는 날 (13일)</span></div>
+      <svg class="chart" id="i-chart1" viewBox="0 0 520 240" role="img" aria-label="주말 시간대별 평균 주차대수"></svg>
+      <p class="note">출처: 한국체육산업개발 올림픽공원 차량입출차·공연·날씨 연계 데이터(2025).</p>
+    </div>
+    <div class="card">
+      <h2>공연 종료 후 출구별 실제 출차 (2025 평균)</h2>
+      <div class="legend" id="i-legend2"></div>
+      <svg class="chart" id="i-chart2" viewBox="0 0 520 240" role="img" aria-label="공연 종료 후 출구별 실제 출차"></svg>
+      <p class="note">출처: 한국체육산업개발 2025 차량 입출차 정보 241만 건. 관람객 5천 명 이상 공연일 113일 평균.</p>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>밤 9시 승차 ÷ 저녁 6시(퇴근) 승차</h2>
+      <div class="legend"><span><i style="background:var(--bad)"></i>9호선 올림픽공원역</span><span><i style="background:var(--ok)"></i>8호선 몽촌토성역</span></div>
+      <svg class="chart" id="i-chart3" viewBox="0 0 520 240" role="img" aria-label="역별 21시 대비 18시 승차 비율"></svg>
+      <p class="note">1.0을 넘으면 퇴근 시간보다 공연 끝나는 시간이 더 붐빈다는 뜻이에요. 출처: 서울시 지하철 호선별 역별 시간대별 승하차 인원(2025).</p>
+    </div>
+    <div class="card">
+      <h2>출구별로 이렇게 달라요</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>출구</th><th>종료 후 2시간 평균 출차</th><th>80% 빠지는 시간(중앙값)</th><th>10분 최대 처리</th></tr></thead>
+        <tbody>
+          <tr><td>동2문</td><td>418대</td><td>61분</td><td>92대</td></tr>
+          <tr><td>북2문</td><td>362대</td><td>58분</td><td>93대</td></tr>
+          <tr><td><b>남2문</b></td><td><b>284대</b></td><td><b>52분</b></td><td><b>113대</b></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">세 출구는 같은 주차장으로 이어져 있어요. 2025년에 동2문으로 들어와 남2문으로 나간 차가 14만 6천 대예요. 출구를 바꾸는 안내가 실제로 가능하다는 뜻이에요.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  활용 데이터: 한국체육산업개발(주) 올림픽공원 2025 차량입출차 정보, 차량입출차·공연·날씨 연계 데이터, 실시간 주차현황 · 서울시 지하철 역별 승하차(일별·시간대별), 실시간 도시데이터.
+  12월 공연 일정은 올림픽공원 홈페이지 기준이고, 예상 관람객은 공연장 수용 인원으로 추정했어요(KSPO DOME 1만 5천, 핸드볼경기장 5천, 올림픽홀 3천, 우리금융아트홀 1천).
+</footer>
+</div>
+
+<script>
+const PRED = [{"date": "2026-12-04", "dow": "금", "aud": 15000, "end": "21:30", "shows": [{"title": "[서울] 2026 이승철 40주년 콘서트 [THE VOICE: LEE SEUNG CHUL]", "venue": "KSPO DOME", "start": "19:00", "end": "21:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [18, 21, 30, 46, 46, 50, 51, 60, 55, 43, 38, 35, 28, 23], "북2문": [11, 18, 30, 46, 47, 51, 54, 63, 57, 45, 38, 33, 20, 15], "남2문": [4, 8, 21, 41, 41, 47, 50, 63, 58, 46, 40, 38, 27, 23]}}, {"date": "2026-12-05", "dow": "토", "aud": 18000, "end": "18:30", "shows": [{"title": "[서울] 2026 이승철 40주년 콘서트 [THE VOICE: LEE SEUNG CHUL]", "venue": "KSPO DOME", "start": "16:00", "end": "18:30", "aud": 15000}, {"title": "2026 비 (RAIN) CONCERT [THE SMOKE]", "venue": "올림픽홀", "start": "18:00", "end": "20:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [45, 42, 28, 39, 36, 40, 43, 49, 48, 40, 35, 31, 27, 26], "북2문": [44, 40, 24, 35, 33, 37, 44, 49, 48, 39, 34, 31, 20, 20], "남2문": [34, 33, 17, 28, 26, 32, 39, 49, 47, 40, 36, 34, 24, 24]}}, {"date": "2026-12-06", "dow": "일", "aud": 18000, "end": "18:30", "shows": [{"title": "[서울] 2026 이승철 40주년 콘서트 [THE VOICE: LEE SEUNG CHUL]", "venue": "KSPO DOME", "start": "16:00", "end": "18:30", "aud": 15000}, {"title": "2026 비 (RAIN) CONCERT [THE SMOKE]", "venue": "올림픽홀", "start": "17:00", "end": "19:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [45, 42, 28, 39, 36, 40, 43, 49, 48, 40, 35, 31, 27, 26], "북2문": [44, 40, 24, 35, 33, 37, 44, 49, 48, 39, 34, 31, 20, 20], "남2문": [34, 33, 17, 28, 26, 32, 39, 49, 47, 40, 36, 34, 24, 24]}}, {"date": "2026-12-11", "dow": "금", "aud": 3000, "end": "21:30", "shows": [{"title": "2026 박지현 팬콘서트 〈멤버쉽 시즌2 : 2026 박지현 어워즈〉", "venue": "올림픽홀", "start": "19:00", "end": "21:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [0, 0, 4, 19, 17, 13, 14, 26, 26, 20, 21, 21, 19, 18], "북2문": [0, 0, 2, 19, 10, 3, 8, 22, 27, 19, 17, 17, 9, 8], "남2문": [0, 0, 0, 16, 7, 1, 6, 25, 33, 26, 25, 25, 18, 18]}}, {"date": "2026-12-12", "dow": "토", "aud": 18000, "end": "20:30", "shows": [{"title": "2026 박지현 팬콘서트 〈멤버쉽 시즌2 : 2026 박지현 어워즈〉", "venue": "올림픽홀", "start": "17:00", "end": "19:30", "aud": 3000}, {"title": "2026 DAVICHI CONCERT 〈IN OUR SCENES〉", "venue": "KSPO DOME", "start": "18:00", "end": "20:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [13, 20, 32, 48, 48, 49, 48, 53, 51, 42, 37, 34, 29, 25], "북2문": [4, 14, 29, 45, 45, 47, 49, 54, 51, 42, 37, 33, 23, 19], "남2문": [0, 4, 20, 39, 39, 43, 44, 54, 51, 43, 39, 37, 27, 24]}}, {"date": "2026-12-13", "dow": "일", "aud": 18000, "end": "19:30", "shows": [{"title": "2026 박지현 팬콘서트 〈멤버쉽 시즌2 : 2026 박지현 어워즈〉", "venue": "올림픽홀", "start": "16:00", "end": "18:30", "aud": 3000}, {"title": "2026 DAVICHI CONCERT 〈IN OUR SCENES〉", "venue": "KSPO DOME", "start": "17:00", "end": "19:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [45, 42, 28, 39, 36, 40, 43, 49, 48, 40, 35, 31, 27, 26], "북2문": [44, 40, 24, 35, 33, 37, 44, 49, 48, 39, 34, 31, 20, 20], "남2문": [34, 33, 17, 28, 26, 32, 39, 49, 47, 40, 36, 34, 24, 24]}}, {"date": "2026-12-18", "dow": "금", "aud": 18000, "end": "21:30", "shows": [{"title": "2026 DAY6 Special Concert 'The Present'", "venue": "KSPO DOME", "start": "19:00", "end": "21:30", "aud": 15000}, {"title": "자우림 단독 콘서트 [MIDNIGHT EXPRESS 2026-2027] - 서울", "venue": "올림픽홀", "start": "20:00", "end": "22:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [14, 22, 31, 47, 47, 51, 52, 60, 55, 43, 38, 35, 28, 23], "북2문": [7, 17, 29, 46, 46, 51, 53, 62, 57, 44, 37, 32, 19, 14], "남2문": [0, 7, 21, 40, 40, 46, 49, 62, 57, 45, 38, 36, 25, 22]}}, {"date": "2026-12-19", "dow": "토", "aud": 18000, "end": "20:30", "shows": [{"title": "2026 DAY6 Special Concert 'The Present'", "venue": "KSPO DOME", "start": "18:00", "end": "20:30", "aud": 15000}, {"title": "자우림 단독 콘서트 [MIDNIGHT EXPRESS 2026-2027] - 서울", "venue": "올림픽홀", "start": "18:00", "end": "20:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [13, 20, 32, 48, 48, 49, 48, 53, 51, 42, 37, 34, 29, 25], "북2문": [4, 14, 29, 45, 45, 47, 49, 54, 51, 42, 37, 33, 23, 19], "남2문": [0, 4, 20, 39, 39, 43, 44, 54, 51, 43, 39, 37, 27, 24]}}, {"date": "2026-12-20", "dow": "일", "aud": 18000, "end": "19:30", "shows": [{"title": "2026 DAY6 Special Concert 'The Present'", "venue": "KSPO DOME", "start": "17:00", "end": "19:30", "aud": 15000}, {"title": "자우림 단독 콘서트 [MIDNIGHT EXPRESS 2026-2027] - 서울", "venue": "올림픽홀", "start": "17:00", "end": "19:30", "aud": 3000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [45, 42, 28, 39, 36, 40, 43, 49, 48, 40, 35, 31, 27, 26], "북2문": [44, 40, 24, 35, 33, 37, 44, 49, 48, 39, 34, 31, 20, 20], "남2문": [34, 33, 17, 28, 26, 32, 39, 49, 47, 40, 36, 34, 24, 24]}}, {"date": "2026-12-24", "dow": "목", "aud": 18000, "end": "22:00", "shows": [{"title": "2026 박진영 콘서트 〈WET〉", "venue": "올림픽홀", "start": "20:00", "end": "22:30", "aud": 3000}, {"title": "2026 THE BOYZ CONCERT : ZENERATION III", "venue": "KSPO DOME", "start": "19:30", "end": "22:00", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [18, 25, 35, 51, 51, 54, 56, 64, 59, 47, 42, 38, 31, 27], "북2문": [9, 18, 31, 48, 48, 52, 55, 64, 58, 45, 38, 33, 20, 16], "남2문": [0, 6, 20, 39, 39, 45, 48, 61, 56, 44, 38, 35, 24, 20]}}, {"date": "2026-12-25", "dow": "금", "aud": 23000, "end": "20:30", "shows": [{"title": "2026 박진영 콘서트 〈WET〉", "venue": "올림픽홀", "start": "17:00", "end": "19:30", "aud": 3000}, {"title": "2026 THE BOYZ CONCERT : ZENERATION III", "venue": "KSPO DOME", "start": "18:00", "end": "20:30", "aud": 15000}, {"title": "2026 CRUSH CONCERT [CRUSH H♥UR]", "venue": "티켓링크 라이브 아레나(핸드볼경기장)", "start": "18:30", "end": "21:00", "aud": 5000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [15, 22, 35, 52, 52, 55, 55, 59, 50, 37, 33, 29, 24, 20], "북2문": [6, 16, 31, 49, 50, 53, 55, 60, 51, 37, 32, 28, 18, 14], "남2문": [10, 18, 34, 62, 63, 68, 70, 78, 51, 38, 34, 32, 22, 19]}}, {"date": "2026-12-26", "dow": "토", "aud": 23000, "end": "19:30", "shows": [{"title": "2026 박진영 콘서트 〈WET〉", "venue": "올림픽홀", "start": "18:00", "end": "20:30", "aud": 3000}, {"title": "2026 THE BOYZ CONCERT : ZENERATION III", "venue": "KSPO DOME", "start": "17:00", "end": "19:30", "aud": 15000}, {"title": "2026 CRUSH CONCERT [CRUSH H♥UR]", "venue": "티켓링크 라이브 아레나(핸드볼경기장)", "start": "18:00", "end": "20:30", "aud": 5000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [47, 44, 30, 43, 41, 46, 50, 55, 47, 35, 30, 27, 22, 21], "북2문": [46, 42, 27, 39, 38, 43, 50, 55, 47, 34, 29, 26, 15, 15], "남2문": [47, 46, 31, 51, 50, 57, 64, 73, 47, 35, 31, 29, 19, 19]}}, {"date": "2026-12-27", "dow": "일", "aud": 15000, "end": "18:30", "shows": [{"title": "2026 THE BOYZ CONCERT : ZENERATION III", "venue": "KSPO DOME", "start": "16:00", "end": "18:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [50, 43, 26, 37, 35, 38, 42, 48, 46, 39, 34, 30, 26, 25], "북2문": [49, 41, 23, 34, 32, 36, 43, 49, 47, 39, 34, 30, 19, 19], "남2문": [39, 34, 16, 28, 26, 32, 39, 49, 47, 40, 36, 34, 24, 24]}}, {"date": "2026-12-31", "dow": "목", "aud": 15000, "end": "23:30", "shows": [{"title": "2026 성시경 연말 콘서트 〈성시경〉", "venue": "KSPO DOME", "start": "21:00", "end": "23:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [24, 28, 40, 56, 56, 60, 61, 68, 59, 48, 43, 39, 32, 27], "북2문": [15, 23, 38, 54, 55, 59, 62, 69, 60, 47, 40, 35, 22, 18], "남2문": [8, 13, 29, 49, 49, 56, 59, 70, 61, 49, 43, 40, 29, 26]}}, {"date": "2027-01-01", "dow": "금", "aud": 15000, "end": "21:30", "shows": [{"title": "2026 성시경 연말 콘서트 〈성시경〉", "venue": "KSPO DOME", "start": "19:00", "end": "21:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [18, 21, 30, 46, 46, 50, 51, 60, 55, 43, 38, 35, 28, 23], "북2문": [11, 18, 30, 46, 47, 51, 54, 63, 57, 45, 38, 33, 20, 15], "남2문": [4, 8, 21, 41, 41, 47, 50, 63, 58, 46, 40, 38, 27, 23]}}, {"date": "2027-01-02", "dow": "토", "aud": 15000, "end": "20:30", "shows": [{"title": "2026 성시경 연말 콘서트 〈성시경〉", "venue": "KSPO DOME", "start": "18:00", "end": "20:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [17, 20, 31, 47, 47, 48, 48, 53, 50, 42, 37, 34, 29, 25], "북2문": [8, 15, 29, 45, 45, 47, 49, 55, 51, 42, 37, 33, 23, 19], "남2문": [1, 5, 20, 39, 40, 43, 45, 55, 52, 43, 40, 37, 28, 25]}}, {"date": "2027-01-03", "dow": "일", "aud": 15000, "end": "20:30", "shows": [{"title": "2026 성시경 연말 콘서트 〈성시경〉", "venue": "KSPO DOME", "start": "18:00", "end": "20:30", "aud": 15000}], "rel": [-20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110], "curves": {"동2문": [17, 20, 31, 47, 47, 48, 48, 53, 50, 42, 37, 34, 29, 25], "북2문": [8, 15, 29, 45, 45, 47, 49, 55, 51, 42, 37, 33, 23, 19], "남2문": [1, 5, 20, 39, 40, 43, 45, 55, 52, 43, 40, 37, 28, 25]}}];
+const LIVE = {"lvl": "여유", "pmin": 9000, "pmax": 9500, "weather": "10.5°C · 약한 비가 내리고 있어요", "fcst": [{"t": "19:00", "lvl": "여유"}, {"t": "20:00", "lvl": "여유"}, {"t": "21:00", "lvl": "여유"}, {"t": "22:00", "lvl": "여유"}, {"t": "23:00", "lvl": "여유"}], "roads": [{"name": "남2문 → 올림픽공원앞교차로", "road": "위례성대로", "spd": 33, "idx": "원활"}, {"name": "남2문 → 방이초교", "road": "위례성대로", "spd": 43, "idx": "원활"}, {"name": "북2문 → 서울체고앞", "road": "강동대로", "spd": 36, "idx": "원활"}, {"name": "북2문앞교차로 → 북2문", "road": "강동대로", "spd": 14, "idx": "정체"}, {"name": "동문교차로 → 오륜교 (동2문 방면)", "road": "양재대로", "spd": 26, "idx": "원활"}]};
+const GATES = ['동2문','북2문','남2문'];
+const GCOL = {'동2문':'var(--g1)','북2문':'var(--g2)','남2문':'var(--g3)'};
+const CAP = {'동2문':92,'북2문':93,'남2문':113};
+// 출구별 '차량 80% 소진 시간' = a × 예상 출차량 + b  (2025 공연일 실측 회귀, 출구별)
+const CLEAR = {'동2문':[0.0142,55.4],'북2문':[0.0215,49.6],'남2문':[0.0216,45.6]};
+const WALK = { // 공연장 → 역 도보(분), 지도 기준 추정
+  'KSPO DOME':{'9호선 올림픽공원':10,'5호선 올림픽공원':10,'8호선 몽촌토성':15,'9호선 한성백제':15},
+  '올림픽홀':{'9호선 올림픽공원':5,'5호선 올림픽공원':5,'8호선 몽촌토성':20,'9호선 한성백제':15},
+  '티켓링크 라이브 아레나(핸드볼경기장)':{'9호선 올림픽공원':10,'5호선 올림픽공원':10,'8호선 몽촌토성':15,'9호선 한성백제':15},
+  '우리금융아트홀':{'9호선 올림픽공원':12,'5호선 올림픽공원':12,'8호선 몽촌토성':12,'9호선 한성백제':10}
+};
+// 공연일 추가 승차 = 관람객 × 0.206 × 역별 비중 (2025 관람 1만+ 85일 분석)
+const SUBWAY_SHARE = {'9호선 올림픽공원':0.91,'5호선 올림픽공원':0.14,'9호선 한성백제':0.02,'8호선 몽촌토성':0};
+const SUBWAY_RATE = 0.206;
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function addMin(hhmm,m){let [h,mi]=hhmm.split(':').map(Number);let t=h*60+mi+m;t=((t%1440)+1440)%1440;return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');}
+function gateStats(day,g){
+  const rel=day.rel, v=day.curves[g];
+  const idx=rel.map((r,i)=>r>=0&&r<=80?i:-1).filter(i=>i>=0);
+  const tot=idx.reduce((a,i)=>a+v[i],0);
+  const t80=Math.round(CLEAR[g][0]*tot+CLEAR[g][1]);
+  const peak=Math.max(...idx.map(i=>v[i])); const pi=idx.find(i=>v[i]===peak);
+  let calm=null; for(const i of idx){ if(rel[i]>rel[pi] && v[i]<=peak*0.6){calm=rel[i];break;} }
+  return {tot,t80,peak,peakRel:rel[pi],calm,util:peak/CAP[g]};
+}
+function level(tot){ return tot>=1250?['bad','매우 혼잡']:tot>=1100?["warn","혼잡"]:['ok','보통']; }
+function dayTotal(day){return GATES.reduce((a,g)=>a+gateStats(day,g).tot,0);}
+
+/* ---------- 차트 ---------- */
+function lineChart(svg,{x,series,ymax,xfmt,yfmt,refs=[],vline=null,W=720,H=260,pad=[36,16,28,44],marks=true}){
+  const [t,r,b,l]=pad, iw=W-l-r, ih=H-t-b;
+  const xs=i=>l+iw*(i/(x.length-1)), ys=v=>t+ih*(1-v/ymax);
+  let h='';
+  const ticks=4; for(let k=0;k<=ticks;k++){const v=ymax*k/ticks; h+=`<line x1="${l}" x2="${W-r}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--line)"/><text x="${l-6}" y="${ys(v)+4}" text-anchor="end">${yfmt(v)}</text>`;}
+  x.forEach((xv,i)=>{ const lab=xfmt(xv,i); if(lab!=null) h+=`<text x="${xs(i)}" y="${H-8}" text-anchor="middle">${lab}</text>`;});
+  refs.forEach(rf=>{h+=`<line x1="${l}" x2="${W-r}" y1="${ys(rf.v)}" y2="${ys(rf.v)}" stroke="${rf.c}" stroke-dasharray="4 4" opacity=".7"/>`; if(rf.label) h+=`<text x="${W-r}" y="${ys(rf.v)-5}" text-anchor="end" style="fill:${rf.c}">${rf.label}</text>`;});
+  if(vline!=null){h+=`<line x1="${xs(vline.i)}" x2="${xs(vline.i)}" y1="${t-6}" y2="${t+ih}" stroke="var(--ink)" stroke-dasharray="2 3"/><text x="${xs(vline.i)+4}" y="${t-10}">${vline.label}</text>`;}
+  series.forEach(s=>{
+    const pts=s.v.map((v,i)=>`${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join(' ');
+    if(s.fill) h+=`<polygon points="${xs(0)},${ys(0)} ${pts} ${xs(s.v.length-1)},${ys(0)}" fill="${s.c}" opacity=".08"/>`;
+    h+=`<polyline points="${pts}" fill="none" stroke="${s.c}" stroke-width="${s.w||2.5}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if(marks){const i=s.v.indexOf(Math.max(...s.v)); h+=`<circle cx="${xs(i)}" cy="${ys(s.v[i])}" r="4" fill="${s.c}"/>`;}
+  });
+  svg.innerHTML=h;
+}
+
+/* ---------- 관람객 ---------- */
+function fillDates(){
+  const sel=$('#sel-date');
+  sel.innerHTML=PRED.map((d,i)=>`<option value="${i}">${d.date.slice(5).replace('-','/')} (${d.dow}) · ${d.shows.length}개 공연</option>`).join('');
+  const xmas=PRED.findIndex(d=>d.date==='2026-12-25'); sel.value=String(xmas>=0?xmas:0);
+}
+function fillShows(){
+  const d=PRED[+$('#sel-date').value];
+  $('#sel-show').innerHTML=d.shows.map((s,i)=>`<option value="${i}">${esc(s.title)} · ${esc(s.venue)} ${s.start}</option>`).join('');
+}
+function renderVisitor(){
+  const d=PRED[+$('#sel-date').value], s=d.shows[+$('#sel-show').value||0];
+  const st=Object.fromEntries(GATES.map(g=>[g,gateStats(d,g)]));
+  const best=GATES.slice().sort((a,b)=>st[a].t80-st[b].t80||st[a].peak-st[b].peak)[0];
+  const worst=GATES.slice().sort((a,b)=>st[b].t80-st[a].t80)[0];
+  const tot=dayTotal(d), [lc,lt]=level(tot);
+  const others=d.shows.filter(x=>x!==s);
+  $('#v-summary').innerHTML=`
+    <span class="pill ${lc}">퇴장 혼잡 ${lt}</span>
+    <span class="pill acc">내 공연 종료 예상 ${s.end}</span>
+    ${others.length?`<span class="pill warn">같은 날 다른 공연 ${others.length}개 (${others.map(o=>esc(o.venue.replace(/\(.+\)/,''))+' '+o.end+' 종료').join(', ')})</span>`:''}
+    <span class="small muted">공원 전체 예상 관람객 약 ${d.aud.toLocaleString()}명</span>`;
+  const calm=st[worst].calm!=null?st[worst].calm:st[worst].t80;
+  const gap=st[worst].t80-st[best].t80;
+  $('#v-advice').innerHTML=(gap>=3?`차로 오셨다면 <b>${best}</b> 출구로 나가세요. ${worst}보다 차가 80% 빠지는 시간이 약 <b>${gap}분 빨라요</b>. `
+      :`오늘은 세 출구 차이가 크지 않아요(최대 ${gap}분). 그중 <b>${best}</b>가 가장 빨리 빠져요. `)+
+    `서두르지 않아도 된다면 공원 공연 종료(${d.end}) 후 <b>${calm}분</b>쯤 지나 출발하면 덜 막혀요. 지하철은 9호선 올림픽공원역 대신 <b>8호선 몽촌토성역</b>이 여유로워요.`;
+  $('#v-gates').innerHTML=GATES.map(g=>{const x=st[g]; const u=Math.round(x.util*100); const [uc,ut]=u>=80?['bad','대기열 예상']:u>=60?['warn','붐빔']:['ok','원활'];
+    return `<div class="card gate ${g===best?'best':''}" style="--gc:${GCOL[g]}">
+      <div class="row" style="justify-content:space-between"><h2>${g}</h2>${g===best?'<span class="pill ok">추천 출구</span>':`<span class="pill ${uc}">${ut}</span>`}</div>
+      <div><div class="big">약 ${x.t80}분</div><div class="small muted">종료 후 차량 80%가 빠지는 시간</div></div>
+      <dl class="kv"><dt>종료 후 80분 예상 출차</dt><dd>${x.tot.toLocaleString()}대</dd>
+      <dt>가장 붐비는 10분</dt><dd>종료 ${x.peakRel>=0?'+':''}${x.peakRel}분 · ${x.peak}대</dd>
+      <dt>처리 여력 사용률</dt><dd>${u}%</dd></dl></div>`;}).join('');
+  $('#v-legend').innerHTML=GATES.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g}</span>`).join('');
+  const ymax=Math.max(120,...GATES.map(g=>Math.max(...d.curves[g])))*1.05;
+  lineChart($('#v-chart'),{x:d.rel,series:GATES.map(g=>({v:d.curves[g],c:GCOL[g],fill:g===best})),ymax,
+    xfmt:(r,i)=>i%2===0?addMin(d.end,r):null, yfmt:v=>Math.round(v)+'대',
+    refs:[{v:CAP['동2문'],c:'var(--muted)',label:'출구 처리 한계(동2·북2)'}], vline:{i:d.rel.indexOf(0),label:'공원 공연 종료 '+d.end}});
+  // stations
+  const extra=k=>Math.round(d.aud*SUBWAY_RATE*SUBWAY_SHARE[k]);
+  const order=['8호선 몽촌토성','9호선 한성백제','5호선 올림픽공원','9호선 올림픽공원'];
+  const walk=WALK[s.venue]||WALK['KSPO DOME'];
+  $('#v-stations').innerHTML=order.map(k=>{const e=extra(k); const [c,t]=e>=1500?['bad','매우 붐빔']:e>=300?['warn','붐빔']:['ok','여유'];
+    return `<div class="station"><div><b>${k}역</b> <span class="pill ${c}">${t}</span><div class="small muted">공연 후 추가 승차 예상 ${e>0?'+'+e.toLocaleString()+'명':'거의 없음'}</div></div>
+    <div style="text-align:right"><div class="big" style="font-size:20px">${walk[k]}분</div><div class="small muted">도보</div></div></div>`;}).join('');
+  renderLive();
+}
+function renderLive(){
+  const L=LIVE; const roads=L.roads.map(r=>{const c=r.idx==='원활'?'ok':r.idx==='서행'?'warn':'bad';return `<div class="station"><div><b>${esc(r.name)}</b><div class="small muted">${esc(r.road)} · 시속 ${r.spd}km</div></div><div><span class="pill ${c}">${esc(r.idx)}</span></div></div>`;}).join('');
+  const fc=L.fcst.map(f=>`<span class="pill ${f.lvl==='여유'?'ok':f.lvl==='보통'?'acc':f.lvl==='약간 붐빔'?'warn':'bad'}">${f.t} ${f.lvl}</span>`).join(' ');
+  $('#v-live').innerHTML=`<div class="row"><span class="pill ${L.lvl==='여유'?'ok':'warn'}">공원 인구 ${esc(L.lvl)}</span><span class="small muted">약 ${L.pmin.toLocaleString()}~${L.pmax.toLocaleString()}명 · ${esc(L.weather)}</span></div>
+   <div class="row small">${fc}</div><div>${roads}</div>`;
+}
+
+/* ---------- 운영자 ---------- */
+let opSel=null;
+function renderOperator(){
+  const tots=PRED.map(dayTotal);
+  const nBad=tots.filter(t=>level(t)[0]==='bad').length, nWarn=tots.filter(t=>level(t)[0]==='warn').length;
+  const maxI=tots.indexOf(Math.max(...tots));
+  $('#o-kpi').innerHTML=[
+    ['공연일',PRED.length+'일','12/4 ~ 1/3'],['매우 혼잡',nBad+'일','종료 후 80분 1,250대 이상'],['혼잡',nWarn+'일','1,100대 이상'],
+    ['최고 위험일',PRED[maxI].date.slice(5).replace('-','/')+' ('+PRED[maxI].dow+')',Math.round(tots[maxI]).toLocaleString()+'대 예상']
+  ].map(([a,b,c])=>`<div class="card"><h3>${a}</h3><div class="big">${b}</div><div class="small muted">${c}</div></div>`).join('');
+  if(opSel==null) opSel=maxI;
+  $('#o-table').innerHTML=PRED.map((d,i)=>{const [c,t]=level(tots[i]);return `<tr class="${i===opSel?'sel':''}" data-i="${i}" tabindex="0">
+    <td><b>${d.date.slice(5).replace('-','/')}</b> (${d.dow})</td><td>${d.shows.map(s=>esc(s.venue.replace(/\(.+\)/,''))).join(' + ')}</td>
+    <td>${d.aud.toLocaleString()}명</td><td>${d.end}</td><td>${Math.round(tots[i]).toLocaleString()}대</td><td><span class="pill ${c}">${t}</span></td></tr>`;}).join('');
+  document.querySelectorAll('#o-table tr').forEach(tr=>{const go=()=>{opSel=+tr.dataset.i;renderOperator();}; tr.onclick=go; tr.onkeydown=e=>{if(e.key==='Enter')go();};});
+  const d=PRED[opSel]; const st=Object.fromEntries(GATES.map(g=>[g,gateStats(d,g)]));
+  $('#o-title').textContent=`출구 처리 여력 · ${d.date.slice(5).replace('-','/')} (${d.dow})`;
+  $('#o-util').innerHTML=GATES.map(g=>{const u=Math.min(1,st[g].util); const c=u>=.8?'var(--bad)':u>=.6?'var(--warn)':'var(--ok)';
+    return `<div style="display:grid;gap:4px"><div class="row" style="justify-content:space-between"><b>${g}</b><span class="small muted">피크 ${st[g].peak}대 / 한계 ${CAP[g]}대 · ${Math.round(st[g].util*100)}%</span></div><div class="bar"><span style="width:${u*100}%;background:${c}"></span></div></div>`;}).join('');
+  const busiest=GATES.slice().sort((a,b)=>st[b].util-st[a].util)[0], freest=GATES.slice().sort((a,b)=>st[a].util-st[b].util)[0];
+  const subwayExtra=Math.round(d.aud*SUBWAY_RATE*0.91);
+  $('#o-actions').innerHTML=[
+    `공원 공연 종료 <b>${addMin(d.end,-10)}</b>부터 주차장 안내판·앱 알림으로 <b>${busiest} → ${freest}</b> 출구 분산 안내 시작`,
+    `${busiest} 출구 정산 부스 추가 운영: 종료 직후 <b>${st[busiest].peakRel>=0?'+':''}${st[busiest].peakRel}분</b> 전후 피크 (${st[busiest].peak}대/10분 예상)`,
+    `9호선 올림픽공원역 추가 승차 약 <b>${subwayExtra.toLocaleString()}명</b> 예상 → 운영사에 막차 전 열차 간격 조정 요청, 몽촌토성역 방향 도보 안내 인력 배치`,
+    d.shows.length>1?`같은 날 공연 ${d.shows.length}개 종료 시각이 ${d.shows.map(s=>s.end).join(', ')}로 겹쳐요. 공연장별 퇴장 순서를 조율하면 출구 피크를 낮출 수 있어요`:`단독 공연일이에요. 기본 인력 배치로 대응 가능해요`
+  ].map(x=>`<li>${x}</li>`).join('');
+}
+
+/* ---------- 데이터 근거 ---------- */
+const WK = {con:[338,337,339,333,326,347,426,553,807,1080,1307,1423,1494,1722,1926,1999,1963,1672,1485,1303,953,551,377,340],
+            non:[391,387,382,377,366,380,404,502,668,776,981,979,1104,1281,1392,1334,1181,938,709,625,561,451,391,377]};
+const SHAPE = {rel:[-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120],
+  '동2문':[25,28,36,48,55,55,51,49,42,36,31,27,25,20,17,16],
+  '북2문':[20,20,29,47,55,50,47,44,36,29,23,21,17,10,8,6],
+  '남2문':[12,13,18,33,48,46,42,35,28,20,16,13,10,6,5,4]};
+const RATIO = {o9:[0.75,0.97,1.44,1.13,2.32,1.63,1.65,1.42,1.04,1.53,1.08,2.1], m8:[0.38,0.36,0.39,0.36,0.39,0.39,0.35,0.36,0.37,0.37,0.38,0.44]};
+function renderInsight(){
+  $('#i-kpi').innerHTML=[
+    ['분석한 입출차 기록','241만 건','2025년 1년치, 출구·초 단위'],
+    ['공연 날 9호선 올림픽공원역','+2,791명','추가 승차의 91%가 이 역에 몰려요'],
+    ['밤 9시 승차, 퇴근 시간 대비','최대 2.3배','9호선 올림픽공원역 (5월)'],
+    ['AI 예측 오차','23% ↓','평균 곡선 대비 (MAE 14.4대 vs 18.6대)']
+  ].map(([a,b,c])=>`<div class="card"><h3>${a}</h3><div class="big">${b}</div><div class="small muted">${c}</div></div>`).join('');
+  const hrs=[...Array(24).keys()];
+  lineChart($('#i-chart1'),{x:hrs,series:[{v:WK.non,c:'var(--muted)'},{v:WK.con,c:'var(--accent)',fill:true}],ymax:2200,W:520,H:240,pad:[24,12,28,44],
+    xfmt:(h,i)=>i%3===0?h+'시':null,yfmt:v=>Math.round(v).toLocaleString()});
+  $('#i-legend2').innerHTML=GATES.map(g=>`<span><i style="background:${GCOL[g]}"></i>${g}</span>`).join('');
+  lineChart($('#i-chart2'),{x:SHAPE.rel,series:GATES.map(g=>({v:SHAPE[g],c:GCOL[g]})),ymax:60,W:520,H:240,pad:[24,26,28,40],
+    xfmt:(r,i)=>i%3===0?(r>=0?'+':'')+r+'분':null,yfmt:v=>Math.round(v)+'대',vline:{i:3,label:'공연 종료'}});
+  lineChart($('#i-chart3'),{x:[...Array(12).keys()],series:[{v:RATIO.o9,c:'var(--bad)'},{v:RATIO.m8,c:'var(--ok)'}],ymax:2.4,W:520,H:240,pad:[24,12,28,40],
+    xfmt:(m,i)=>i%2===0?(m+1)+'월':null,yfmt:v=>v.toFixed(1),refs:[{v:1,c:'var(--ink)',label:'퇴근 시간과 같음'}]});
+}
+
+/* ---------- 탭 ---------- */
+const VIEWS=['visitor','operator','insight'];
+function show(v){ if(!VIEWS.includes(v)) v='visitor';
+  VIEWS.forEach(x=>{ $('#view-'+x).hidden=x!==v; $('#tab-'+x).setAttribute('aria-selected',x===v?'true':'false'); });
+  if(v==='operator') renderOperator(); if(v==='insight') renderInsight(); }
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ location.hash=b.dataset.view; });
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+fillDates(); fillShows(); renderVisitor();
+$('#sel-date').onchange=()=>{fillShows();renderVisitor();};
+$('#sel-show').onchange=renderVisitor;
+show(location.hash.slice(1));
+</script>
+</body>
+</html>
